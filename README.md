@@ -122,3 +122,29 @@ element = browser.find_element(By.NAME, 'q')  # Находим элемент п
 - `<meter>` - Индикатор диапазона значений (например, уровень заряда)
 
 все элементы [тут](https://parsinger.ru/2.1/DOM/block_strok_elem.html)
+
+
+### HTML Атрибуты
+
+если у нас такой элемент который нужно нам найти
+```html
+<p class="text" id="unique">Учим<p>
+```
+то мы его находим так
+```html
+<p class="text highlight">Это абзац с двойным классом.</p>
+```
+
+если у нас такой элемент который нужно нам найти
+```python
+element = browser.find_element(By.CSS_SELECTOR, 'p.text#unique')
+```
+то мы его находим так
+```python
+element = browser.find_element(By.CSS_SELECTOR, 'p.text.highlight')
+```
+
+если нам нужно добраться до аттрибута
+```python
+get_attribute("alt")
+```
