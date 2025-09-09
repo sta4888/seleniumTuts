@@ -1,60 +1,33 @@
 import time
-from fileinput import close
-from selenium.webdriver.support import expected_conditions as EC
+from playwright.sync_api import sync_playwright
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=False, slow_mo=500)
+    page = browser.new_page()
+    page.goto("https://stash.clash.gg/")
 
-from selen_utils import close_modal, login_btn_press, from_sms, take_screenshot_modal
+    # Ждём и открываем меню
+    page.wait_for_selector("button.hamburger", timeout=30000)
+    page.click("button.hamburger")
 
-# Создание объекта ChromeOptions для дополнительных настроек браузера
-options_chrome = webdriver.ChromeOptions()
-options_chrome.add_argument('--no-sandbox')
-# options_chrome.add_argument('--headless')
-options_chrome.add_argument('--disable-dev-shm-usage')
+    # Ждём 7-й tab
+    page.wait_for_selector("div.mobile-menu.no-scrollbar.open > div > mobile-nav-tab:nth-child(7)", timeout=30000)
 
-with webdriver.Chrome(options=options_chrome) as browser:
-    # Открытие сайта в браузере
-    browser.get("https://openbudget.uz/boards/initiatives/initiative/52/93d0a0c6-95c7-47f9-b8c7-0e0406fe3329")
+    # Все <a> внутри group-items
+    group_items = page.query_selector_all(
+        "div.mobile-menu.no-scrollbar.open > div > mobile-nav-tab:nth-child(7) div.group-items > a"
+    )
 
-    element = WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "vote-wrapper"))).click()
+    results = []
+    for el in group_items:
+        href = el.get_attribute("href")
+        span = el.query_selector("span")
+        text = span.inner_text() if span else ""
+        results.append({"text": text, "href": href})
 
-    # if close_modal(browser):
-    #     browser.save_screenshot("page.png")
-    #
-    # if login_btn_press(browser):
-    #     browser.save_screenshot("login.png")
-    #
-    # login_field = browser.find_element(By.ID, "phone-number")
-    # login_field.click()
-    #
-    # login_field.send_keys("934343242")
-    from_sms(browser)
-    take_screenshot_modal(browser)
+    print("Найденные элементы:")
+    for r in results:
+        print(f"{r['text']} -> {r['href']}")
 
-
-    browser.save_screenshot("ins_number.png")
-
-    # # element = WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "vote-wrapper"))).click()
-    # time.sleep(30)
-    #
-    #
-    # # close_modal_window_btn = browser.find_element(By.CSS_SELECTOR, "#app > div.main-view > div.main-container > div > div.mf-modal.show.modal > div.mf-modal-content.md > button")
-    # # time.sleep(1)
-    # # close_modal_window_btn.click()
-    #
-    # button_login = browser.find_element(By.CSS_SELECTOR,
-    #                                    "#app > div.main-view > div.normal-header.top-header > div.top-header-wrapper > button.mf-button.mf-button-light.sign-in")
-    # time.sleep(3)
-    # button_login.click()
-    #
-    # # print(text.text)
-
-    # browser.save_screenshot("page.png")
-
-    # soup = BeautifulSoup(browser.page_source,  'lxml')
-    # headings = soup.find('div',  {'class': 'elementor-heading-title'})
-    # time.sleep(10)
-    # for heading in headings:
-    #     print(heading.getText())
+    time.sleep(10)
+    browser.close()
