@@ -1,11 +1,8 @@
 import time
 from playwright.sync_api import sync_playwright
 
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=False, slow_mo=500)
-    page = browser.new_page()
-    page.goto("https://stash.clash.gg/")
 
+def get_all_items(page):
     # Ждём и открываем меню
     page.wait_for_selector("button.hamburger", timeout=30000)
     page.click("button.hamburger")
@@ -28,6 +25,15 @@ with sync_playwright() as p:
     print("Найденные элементы:")
     for r in results:
         print(f"{r['text']} -> {r['href']}")
+
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=False, slow_mo=500)
+    page = browser.new_page()
+    page.goto("https://stash.clash.gg/case/422/Fever-Case")
+
+    # get_all_items(page)
+
+
 
     time.sleep(10)
     browser.close()
